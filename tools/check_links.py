@@ -6,7 +6,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-FILES = sorted(p for p in ROOT.rglob('*.md') if '.codex-source' not in p.parts and '.git' not in p.parts)
+FILES = sorted(p for p in ROOT.rglob('*.md') if not {'.codex-source', '.git', 'node_modules', 'dist'} & set(p.parts))
 errors = []
 graph = {}
 links = 0

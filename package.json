@@ -1,0 +1,12 @@
+{
+  "name": "protocol-knowledge",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node website/build.mjs",
+    "dev": "node website/serve.mjs",
+    "start": "node website/serve.mjs"
+  },
+  "devDependencies": { "marked": "^17.0.0" }
+}
