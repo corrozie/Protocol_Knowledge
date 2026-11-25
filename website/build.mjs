@@ -29,5 +29,5 @@ for(const file of paths){
  docs.push({id:id(file),file,title,topic,group:file.split('/')[0],html,headings,description,text:body.replace(/[#*`\[\]()]/g,'')});
 }
 await writeFile(path.join(out,'content.json'),JSON.stringify(docs));
-for(const f of ['index.html','style.css','app.js','favicon.svg']) await copyFile(path.join(root,'website',f),path.join(out,f));
+for(const f of ['index.html','style.css','app.js','favicon.svg','refinement.css','motion.js']) await copyFile(path.join(root,'website',f),path.join(out,f));
 console.log(`Built ${docs.length} pages, ${docs.filter(d=>d.topic).length} protocol notes → dist/`);
