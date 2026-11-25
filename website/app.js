@@ -1,3 +1,4 @@
+import { graphPage, mountGraph } from './graph.js';
 import { mountScene } from './motion.js';
 let disposeScene=()=>{};
 const $=s=>document.querySelector(s);
@@ -24,8 +25,7 @@ function home(){
 function groupPage(id){const g=groups.find(g=>g[0]===id);if(!g)return missing();return `<div class="eyebrow">Тематический раздел</div><h1 class="page-title">${g[1]}</h1><p class="page-desc">${g[2]}</p><div class="topic-list">${docs.filter(d=>d.topic&&d.group===id).map(d=>`<a class="topic-row" href="${href(d.id)}"><h2>${esc(d.title)}</h2><p>${esc(d.description)}</p></a>`).join('')}</div>`}
 function notePage(id){const d=byId.get(id);if(!d)return missing();return `<div class="article-layout enter"><div><article class="article">${d.html}</article><div class="article-tools"><button id="copy-link">Скопировать ссылку</button><a href="https://github.com/corrozie/Protocol_Knowledge/blob/main/${d.file}" target="_blank" rel="noopener">Открыть Markdown ↗</a></div></div><aside class="toc" aria-label="На этой странице"><p>НА ЭТОЙ СТРАНИЦЕ</p>${d.headings.map(h=>`<a href="#${h.anchor}" data-scroll="${h.anchor}">${esc(h.label)}</a>`).join('')}</aside></div>`}
 const missing=()=>'<h1 class="page-title">Заметка не найдена</h1><p>Возможно, адрес изменился. Откройте поиск или вернитесь в обзор базы.</p><a class="primary" href="#/">Открыть обзор</a>';
-function relations(id){const d=byId.get(id);if(!d)return '';const section=d.html.split('<h2').find(s=>s.includes('Связи с другими темами'));if(!section)return '';const holder=document.createElement('div');holder.innerHTML='<h2'+section;const links=[...holder.querySelectorAll('li')];return `<div class="connection-center"><h2>${esc(d.title)}</h2><p>${esc(d.description)}</p><a class="primary" style="margin-top:20px" href="${href(d.id)}">Открыть заметку</a></div><div class="section-heading"><h2>С чем связана эта тема</h2></div><div class="link-list">${links.map(li=>{const a=li.querySelector('a');if(!a)return '';return `<a class="relation" href="${a.getAttribute('href')}"><strong>${esc(a.textContent)}</strong><span>${esc(li.textContent.slice(a.textContent.length).replace(/^ — /,''))}</span></a>`}).join('')}</div>`}
-function connections(){return `<div class="eyebrow">КАРТА ЗАВИСИМОСТЕЙ</div><h1 class="page-title">Связи между протоколами</h1><p class="page-desc">Выберите технологию: здесь собраны её зависимости, способы защиты и альтернативы.</p><label for="relation-select">Тема</label><br><select class="graph-select" id="relation-select">${docs.filter(d=>d.topic).map(d=>`<option value="${d.id}" ${d.id==='04_Web/HTTPS'?'selected':''}>${esc(d.title)}</option>`).join('')}</select><div id="relations">${relations('04_Web/HTTPS')}</div><p style="margin-top:28px"><a href="${href('00_Navigation/Map')}" style="color:var(--accent)">Открыть полную карту связей</a></p>`}
+function connections(){return graphPage(docs,groups)}
 function closeMenu(){ $('#sidebar').classList.remove('open');$('#scrim').hidden=true;$('#menu').setAttribute('aria-expanded','false') }
 function route(){
  disposeScene();
@@ -37,8 +37,8 @@ function route(){
  if(d?.topic){const detail=document.querySelector(`[data-group="${d.group}"]`);if(detail)detail.open=true}
  closeMenu();window.scrollTo(0,0);
  if(clean==='/') disposeScene=mountScene();
+ if(clean==='/connections') disposeScene=mountGraph(docs,groups);
  if(document.activeElement?.closest('#main, .sidebar')) $('#main').focus({preventScroll:true});
- $('#relation-select')?.addEventListener('change',e=>$('#relations').innerHTML=relations(e.target.value));
  $('#copy-link')?.addEventListener('click',async e=>{try{await navigator.clipboard.writeText(location.href);e.target.textContent='Ссылка скопирована'}catch{e.target.textContent='Скопируйте адрес из строки браузера'}});
  document.querySelectorAll('[data-scroll]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();document.getElementById(a.dataset.scroll)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}));
  if($('#search-dialog').open)$('#search-dialog').close();
