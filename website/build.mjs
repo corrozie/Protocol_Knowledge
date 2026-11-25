@@ -2,6 +2,7 @@ import {readFile,writeFile,mkdir,readdir,copyFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {marked} from 'marked';
+import {createHash} from 'node:crypto';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const out=path.join(root,'dist'); await mkdir(out,{recursive:true});
 const dirs=['00_Navigation','01_Foundations','02_Access','03_Transport','04_Web','05_Applications','06_Security','07_Practice'];
@@ -30,4 +31,12 @@ for(const file of paths){
 }
 await writeFile(path.join(out,'content.json'),JSON.stringify(docs));
 for(const f of ['index.html','style.css','app.js','favicon.svg','refinement.css','motion.js']) await copyFile(path.join(root,'website',f),path.join(out,f));
+// Version assets so repeat visitors receive the current deployment immediately.
+const digest=async file=>createHash('sha256').update(await readFile(path.join(out,file))).digest('hex').slice(0,12);
+let app=await readFile(path.join(out,'app.js'),'utf8');
+app=app.replace("'./motion.js'",`'./motion.js?v=${await digest('motion.js')}'`);
+await writeFile(path.join(out,'app.js'),app);
+let index=await readFile(path.join(out,'index.html'),'utf8');
+for(const file of ['style.css','refinement.css','app.js','favicon.svg']) index=index.replaceAll(`./${file}`,`./${file}?v=${await digest(file)}`);
+await writeFile(path.join(out,'index.html'),index);
 console.log(`Built ${docs.length} pages, ${docs.filter(d=>d.topic).length} protocol notes → dist/`);
